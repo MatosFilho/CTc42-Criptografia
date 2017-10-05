@@ -73,10 +73,21 @@ void readFiles(char *keyPath, char *textPath) {
 	keyFile = NULL;
 }
 
+void printfile(wstring txt, char *path) {
+	
+	//write
+	FILE * msgFile = fopen(path, "w");
+	for(int i=0; i<(int)txt.size(); i++) {
+		fprintf(msgFile, "%lc", txt[i]);
+	}
+	fclose(msgFile);
+}
+
 wchar_t per[MAXN], inv[MAXN];
 
-//gets next permutation
 void getNextPermutation() {
+	
+	//generates random swaps
 	for(int i=1; i<=nCarac; i++) {
 		int delta = 0;
 		for(int j=0; j<3; j++) {
@@ -87,12 +98,16 @@ void getNextPermutation() {
 		delta %= (nCarac - i + 1);
 		swap(per[i], per[i+delta]);
 	}
+	
+	//gets inverse permutation for decipher
 	for(int i=1; i<=nCarac; i++) {
 		inv[per[i]] = i;
 	}
 }
 
 void initialize() {
+	
+	//initialize random permutation generator
 	currentKeyPos = 0;
 	buildMap();
 	for(wchar_t i=1; i<=nCarac; i++) per[i] = inv[i] = i;
@@ -149,13 +164,17 @@ void decipher() {
 }
 
 void cipheranalisys() {
+	
+	//counts how many times each character appears
 	int freq[MAXN], tot = 0;
 	memset(&freq, 0, sizeof freq);
 	for(int i=0; i<(int)ciphered.size(); i++) {
 		tot++;
 		freq[ciphered[i]]++;
 	}
-	printf("Character apararences:\n");
+	
+	//prints result
+	printf("Character appearances:\n");
 	for(int i=0; i<MAXN; i++) {
 		printf("%lc: %d, %.4f%%\n", wchar_t(i), freq[i], freq[i]*100.0/tot);
 	}
@@ -163,18 +182,25 @@ void cipheranalisys() {
 
 int main(int argc, char *argv[]) {
 	
+	if (argc < 5) {
+		printf("cipher.exe <cipher/decipher> <inputPath> <keyPath> <outPath>\n");
+		return 0;
+	}
+	
 	//read files
-	readFiles(argv[2], argv[1]);
+	readFiles(argv[3], argv[2]);
 	
-	wprintf(L"Texto:\n|%s|\n", text.c_str());
-	
-	cipher();
-	wprintf(L"Mensagem (%u):\n|%s|\n", ciphered.size(), ciphered.c_str());
-	
-	cipheranalisys();
-	
-	decipher();
-	wprintf(L"Decifrado:\n|%s|\n", deciphered.c_str());
+	if (strcmp(argv[1], "cipher") == 0) {
+		cipher();
+		cipheranalisys();
+		printfile(ciphered, argv[4]);
+	}
+	else if (strcmp(argv[1], "decipher") == 0) {
+		ciphered = text;
+		decipher();
+		printfile(deciphered, argv[4]);
+	}
+	else printf("Unknown command\n");
 	
 	return 0;
 }
